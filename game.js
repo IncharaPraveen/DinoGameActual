@@ -1,7 +1,8 @@
+
 const config = {
     type: Phaser.AUTO,
-    width: 900,
-    height: 400,
+    width: 800,
+    height: 600,
     backgroundColor: "#FFF",
     physics: {
         default: 'arcade',
@@ -80,14 +81,12 @@ function create() {
    
 ])
 this.obstacles = this.physics.add.group()
-this.physics.add.collider(this.obstacles, this.player, gameOver,null,this);
-this.physics.add.collider(this.obstacles, this.player, () =>{
-    this.isGameRunning = false;
-    this.physics.pause();
-    let timer = 0;
 
 
-},null, this);
+
+
+ this.physics.add.collider(this.obstacles, this.player, gameOver,null,this);
+
 this.gameOverText = this.add.image(0,0, "game-over");
 this.restartText= this.add.image(0,80,"restart").setInteractive();
 //bc u need a restart button so make its image interactive w user
@@ -95,18 +94,7 @@ this.gameOverContainer = this.add
 .container(1000/2, (300/2) - 50)
 .add([this.gameOverText, this.restartText])
 .setAlpha(0);
-/*this.scoreText = this.add.text(1000,0,"0000", {
-    fontSize : 30,
-    fontFamily : "Ariel",
-    colour : "#535353",
-    resolution : 5
-}).setOrigin(1,0); */
 
-const score = Array.from(String(this.score), Number);
-for(let i = 0; i = 5 - String(this.score).length; i ++){
-    score.unshift(0);
-}
-this.scoreText.setText(score.join("")); 
 
 }
 
@@ -122,7 +110,8 @@ function update(time,delta) {
     if(isSpaceJustDown && onFloor){
         this.player.setVelocityY(-1600);
     }
- this.ground.tilePositionX += this.gameSpeed;
+ 
+this.ground.tilePositionX += this.gameSpeed;
 Phaser.Actions.IncX(this.obstacles.getChildren(), -this.gameSpeed);
 this.timer += delta;
 console.log(this.timer);
@@ -142,19 +131,5 @@ this.timer -= 1000;
       }
      //obstacle deleted once leaving frame
      });
-     this.restartText.on("pointerdown", () =>{
-        this.physics.resume();
-        this.player.setVelocityY(0);
-        this.obstacles.clear(true,true);
-        this.gameOverContainer.setAlpha(0);
-        this.isGameRunning = true;
-     })
- /*this.frameCounter++;
- if(this.frameCounter > 100){
-    this.score += 100;
-    frameCounter -= 100;
- } */
+ 
 }
-
-
-
