@@ -1,7 +1,7 @@
 const config = {
     type: Phaser.AUTO,
-    width: 800,
-    height: 600,
+    width: 900,
+    height: 400,
     backgroundColor: "#FFF",
     physics: {
         default: 'arcade',
@@ -16,15 +16,7 @@ const config = {
         update: update
     }
 };
-
-
-
-
 const game = new Phaser.Game(config);
-
-
-
-
 
 let player;                // The player sprite (Dino)
 let score;                  // The current score of the game
@@ -35,35 +27,28 @@ let scoreText;              // Text object displaying the current score
 let gameOverText;           // Image object for the "Game Over" screen
 let restartText;            
 let gameOverContainer;  
-let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0; // Retrieve the saved high score
 function gameOver(){
-   /* const newHighScore = this.highScoreText.text.substring(this.highScoreText.text.length - 5);
-    const newScore = Number(this.scoreText.text) > Number(newHighScore)
-     ? this.scoreText.text: newHighScore;
-     this.highScoreText.setText("HI" +newScore);
-     this.highScoreText.setAlpha(1); */
-   
     if (this.score > this.highScore) {
         this.highScore = this.score; // Update high score
-        localStorage.setItem('highScore', highScore);
-        this.highScoreText.setText("HI" + String(this.highScore).padStart(4, '0')); // Update high score text
+        this.highScoreText.setText("HI" + String(this.highScore)); // Update high score text
     }
+    this.anims.pauseAll();
     this.highScoreText.setAlpha(1);
     this.gameOverContainer.setAlpha(1);
     this.isGameRunning = false
     this.physics.pause();
-   
-   
+    this.player.setTexture("dino-hurt");
+    this.sound.play("hit");
+
  }
-
-
-
-
 function preload() {
+    this.load.audio("jump", "assets/jump.m4a");
+    this.load.audio("hit", "assets/hit.m4a");
     this.load.spritesheet("dino", "assets/dino-run.png",{
         frameWidth: 88,
         frameHeight : 94
     });
+    this.load.image("dino-hurt", "assets/dino-hurt.png");
     this.load.image("cloud", "assets/cloud.png");
     this.load.image("ground", "assets/ground.png");
     this.load.image("game-over", "assets/game-over.png");
@@ -135,7 +120,7 @@ this.highScoreText = this.add.text(this.scoreText.getBounds().left - 20,0 ,"0000
     resolution : 5
 }).setOrigin(1,0).setAlpha(0);
 
-
+this.highScore = 0;
 this.score = 0;
 this.frameCounter = 0;
 this.gameSpeed = 13;
@@ -145,17 +130,17 @@ this.restartText.on("pointerdown", () =>{
     this.physics.resume();
     this.player.setVelocityY(0);
     this.obstacles.clear(true,true);
-   
     this.frameCounter = 0;
-   this.score = 0; // Reset the score to 0
+    this.score = 0; // Reset the score to 0
     const formattedScore = String(Math.floor(this.score));
     this.scoreText.setText(formattedScore);
     this.isGameRunning = true;
-    this.gameOverContainer.setAlpha(0);
+    this.gameOverContainer.setAlpha(0); 
+    this.anims.resumeAll();
    
    
      })
-
+  
 
 }
 
@@ -165,6 +150,21 @@ this.restartText.on("pointerdown", () =>{
 function update(time,delta) {
     if(!this.isGameRunning){
         return;}
+        this.anims.create({
+            key : "dino-run",
+            frames: this.anims.generateFrameNames("dino", {start: 2, end: 3}),
+            frameRate:10,
+            repeat : -1
+         });
+        if(this.player.body.deltaAbsY() > 4){
+            console.log(this.player.body.deltaAbsY())
+            this.player.anims.stop();
+            this.player.setTexture("dino", 0);
+
+        }
+        else
+        this.player.play("dino-run", true);
+        
     this.frameCounter ++;
     if(this.frameCounter%100 == 0){
         this.score += 100;
@@ -178,9 +178,10 @@ function update(time,delta) {
     const isSpaceJustDown = Phaser.Input.Keyboard.JustDown(space)
     || Phaser.Input.Keyboard.JustDown(up);
      const onFloor = this.player.body.onFloor();
+
     if(isSpaceJustDown && onFloor){
         this.player.setVelocityY(-1600);
-   
+        this.sound.play("jump");
     }
  
 this.ground.tilePositionX += this.gameSpeed;
